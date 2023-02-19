@@ -1,5 +1,6 @@
 package models;
 
+import exceptions.EmptyMovesUndoOperationException;
 import exceptions.MultipleBotsException;
 import strategies.winningStrategy.GameWinningStrategy;
 
@@ -21,6 +22,68 @@ public class Game {
        this.winningStrategies = new ArrayList<>();
        this.lastMovedPlayerIndex = -1;
        this.gameStatus = GameStatus.IN_PROGRESS;
+    }
+
+    public List<Player> getPlayers() {
+        return players;
+    }
+
+    public Board getBoard() {
+        return board;
+    }
+
+    public List<Move> getMoves() {
+        return moves;
+    }
+
+    public GameStatus getGameStatus() {
+        return gameStatus;
+    }
+
+    public Player getWinner() {
+        return winner;
+    }
+
+    public int getLastMovedPlayerIndex() {
+        return lastMovedPlayerIndex;
+    }
+
+    public List<GameWinningStrategy> getWinningStrategies() {
+        return winningStrategies;
+    }
+
+    public void makeMove() {
+        this.lastMovedPlayerIndex +=1;
+        this.lastMovedPlayerIndex %= this.players.size();
+        Move move = this.players.get(this.lastMovedPlayerIndex).makeMove(this.board);
+        this.moves.add(move);
+
+        move.getCell().setSymbol(move.getSymbol());
+
+        for(GameWinningStrategy strategy : winningStrategies) {
+            if(strategy.checkIfWon(board,this.players.get(lastMovedPlayerIndex),move.getCell())) {
+                gameStatus = GameStatus.ENDED;
+                winner = this.players.get(lastMovedPlayerIndex);
+                break;
+            }
+        }
+
+        if (moves.size() == this.board.getDimension() * this.board.getDimension()) {
+            gameStatus = GameStatus.DRAW;
+            return;
+        }
+    }
+
+    public boolean undo() throws EmptyMovesUndoOperationException {
+        if (this.moves.size() == 0)
+            throw new EmptyMovesUndoOperationException();
+        Move lastMove = this.moves.get(this.moves.size()-1);
+        Cell relevantCell = lastMove.getCell();
+        relevantCell.clearCell();
+        this.lastMovedPlayerIndex -=1;
+        this.lastMovedPlayerIndex = (this.lastMovedPlayerIndex + this.players.size()) % this.players.size();
+        this.moves.remove(lastMove);
+        return true;
     }
 
     public static Builder create() {
@@ -85,6 +148,8 @@ public class Game {
               game.board = new Board(dimension);
               return game;
         }
+
+
 
 
     }

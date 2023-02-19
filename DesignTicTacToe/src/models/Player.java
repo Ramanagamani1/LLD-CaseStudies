@@ -34,4 +34,6 @@ public abstract class Player {
         return this.playerType;
     }
 
+    public abstract Move makeMove(Board board);
+
 }

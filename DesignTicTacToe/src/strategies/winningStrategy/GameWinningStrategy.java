@@ -6,5 +6,5 @@ import models.Player;
 
 
 public interface GameWinningStrategy {
-    boolean checkIfWin(Board board, Player player);
+    boolean checkIfWon(Board board, Player player, Cell moveCell);
 }
